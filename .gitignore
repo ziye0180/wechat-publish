@@ -2,6 +2,7 @@
 *.bak*
 node_modules/
 dist/
+*.tsbuildinfo
 *.log
 .idea/
 .vscode/
