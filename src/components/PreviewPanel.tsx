@@ -1,20 +1,36 @@
 import React from 'react';
+import DeviceFrame from './DeviceFrame';
 
 interface PreviewPanelProps {
     renderedHtml: string;
     deviceWidthClass: string;
+    previewDevice: 'mobile' | 'tablet' | 'pc';
     previewRef: React.RefObject<HTMLDivElement>;
 }
 
-export default function PreviewPanel({ renderedHtml, deviceWidthClass, previewRef }: PreviewPanelProps) {
+export default function PreviewPanel({ renderedHtml, deviceWidthClass, previewDevice, previewRef }: PreviewPanelProps) {
+    const isFramedDevice = previewDevice !== 'pc';
+
     return (
-        <div className="relative overflow-y-auto no-scrollbar bg-[#f2f2f7]/50 dark:bg-[#000000] pt-12 pb-32 block z-20 flex-1 min-h-0">
-            <div className={`bg-white rounded-[24px] overflow-hidden shadow-apple-lg ${deviceWidthClass} transition-all duration-500 ring-1 ring-[#00000008] border-t border-white/50 ml-4 md:ml-6 mr-auto h-fit min-h-[calc(100%-48px)]`}>
-                <div
-                    ref={previewRef}
-                    dangerouslySetInnerHTML={{ __html: renderedHtml }}
-                    className="preview-content min-w-full"
-                />
+        <div className="relative overflow-y-auto no-scrollbar bg-[#f2f2f7]/50 dark:bg-[#000000] flex flex-col z-20 flex-1 min-h-0 w-full overflow-x-hidden">
+            <div className={`${deviceWidthClass} transition-all duration-500 ${isFramedDevice ? 'self-center my-12 px-4 lg:px-8' : 'mt-12 mb-32 ml-4 md:ml-6 mr-auto'} h-fit min-h-[calc(100%-48px)] flex items-start justify-center relative`}>
+                {isFramedDevice ? (
+                    <DeviceFrame device={previewDevice as 'mobile' | 'tablet'}>
+                        <div
+                            ref={previewRef}
+                            dangerouslySetInnerHTML={{ __html: renderedHtml }}
+                            className="preview-content min-w-full px-4 pt-4 pb-8 sm:px-6 md:pb-12"
+                        />
+                    </DeviceFrame>
+                ) : (
+                    <div className="bg-white rounded-[24px] overflow-hidden shadow-apple-lg transition-all duration-500 ring-1 ring-[#00000008] border-t border-white/50 w-full">
+                        <div
+                            ref={previewRef}
+                            dangerouslySetInnerHTML={{ __html: renderedHtml }}
+                            className="preview-content min-w-full"
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

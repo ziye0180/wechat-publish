@@ -166,7 +166,12 @@ export default function App() {
                     <EditorPanel markdownInput={markdownInput} onInputChange={setMarkdownInput} />
                 </div>
                 <div className={`${activePanel === 'preview' ? 'flex' : 'hidden'} md:flex flex-col overflow-hidden`}>
-                    <PreviewPanel renderedHtml={renderedHtml} deviceWidthClass={deviceWidthClass()} previewRef={previewRef} />
+                    <PreviewPanel
+                        renderedHtml={renderedHtml}
+                        deviceWidthClass={deviceWidthClass()}
+                        previewDevice={previewDevice}
+                        previewRef={previewRef}
+                    />
                 </div>
             </main>
 
