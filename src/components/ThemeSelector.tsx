@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { THEMES, THEME_GROUPS } from '../lib/themes';
+import { THEMES, THEME_GROUPS, type Theme } from '../lib/themes';
 
 interface ThemeSelectorProps {
     activeTheme: string;
@@ -50,9 +50,12 @@ export default function ThemeSelector({ activeTheme, onThemeChange }: ThemeSelec
         }
     }, [isThemeOpen]);
 
-    // The first 4 themes shown as pill buttons
-    const pillThemes = THEMES.slice(0, 4);
-    const isInDropdown = THEMES.slice(4).some(t => t.id === activeTheme);
+    // Keep top quick-switch pills fixed for best discoverability.
+    const pillThemeIds = ['apple', 'claude', 'wechat', 'sspai'];
+    const pillThemes: Theme[] = pillThemeIds
+        .map(id => THEMES.find(theme => theme.id === id))
+        .filter((theme): theme is Theme => Boolean(theme));
+    const isInDropdown = !pillThemes.some(theme => theme.id === activeTheme);
 
     return (
         <div className="flex items-center flex-wrap gap-2 lg:gap-4 px-4 lg:px-6 py-3 border-r border-transparent md:border-[#00000015] md:dark:border-[#ffffff15] shrink-0">
