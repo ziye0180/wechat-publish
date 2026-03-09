@@ -2,6 +2,7 @@ import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github.css';
 import { THEMES } from './themes';
+import type { Theme } from './themes';
 
 export const md = new MarkdownIt({
     html: true,
@@ -42,8 +43,9 @@ export function preprocessMarkdown(content: string) {
     return content;
 }
 
-export function applyTheme(html: string, themeId: string) {
-    const theme = THEMES.find(t => t.id === themeId) || THEMES[0];
+export function applyTheme(html: string, themeId: string, themes?: Theme[]) {
+    const allThemes = themes || THEMES;
+    const theme = allThemes.find(t => t.id === themeId) || allThemes[0];
     const style = theme.styles;
 
     const parser = new DOMParser();

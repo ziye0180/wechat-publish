@@ -1,4 +1,5 @@
 import { THEMES } from './themes';
+import type { Theme } from './themes';
 
 // Helper to convert images to Base64
 async function getBase64Image(imgUrl: string): Promise<string> {
@@ -20,11 +21,12 @@ async function getBase64Image(imgUrl: string): Promise<string> {
     }
 }
 
-export async function makeWeChatCompatible(html: string, themeId: string): Promise<string> {
+export async function makeWeChatCompatible(html: string, themeId: string, themes?: Theme[]): Promise<string> {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
-    const theme = THEMES.find(t => t.id === themeId) || THEMES[0];
+    const allThemes = themes || THEMES;
+    const theme = allThemes.find(t => t.id === themeId) || allThemes[0];
     const containerStyle = theme.styles.container || '';
 
     // 1. WeChat prefers <section> as the root wrapper for overall styling

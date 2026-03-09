@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { PenLine, Eye } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 import { md, preprocessMarkdown, applyTheme } from './lib/markdown';
 import { makeWeChatCompatible } from './lib/wechatCompat';
-import { THEMES } from './lib/themes';
+import { THEMES, getAllThemes, getAllThemeGroups } from './lib/themes';
+import { useCustomThemes } from './hooks/useCustomThemes';
 import { defaultContent } from './defaultContent';
 import Header from './components/Header';
 import ThemeSelector from './components/ThemeSelector';
@@ -28,6 +29,10 @@ export default function App() {
     const scrollSyncLockRef = useRef<'editor' | 'preview' | null>(null);
     const scrollLockReleaseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    const { customThemes, addTheme, removeTheme } = useCustomThemes();
+    const allThemes = useMemo(() => getAllThemes(customThemes), [customThemes]);
+    const allThemeGroups = useMemo(() => getAllThemeGroups(customThemes), [customThemes]);
+
     useEffect(() => {
         // Enforce light mode as default, do not follow system preferences
     }, []);
@@ -43,9 +48,9 @@ export default function App() {
 
     useEffect(() => {
         const rawHtml = md.render(preprocessMarkdown(markdownInput));
-        const styledHtml = applyTheme(rawHtml, activeTheme);
+        const styledHtml = applyTheme(rawHtml, activeTheme, allThemes);
         setRenderedHtml(styledHtml);
-    }, [markdownInput, activeTheme]);
+    }, [markdownInput, activeTheme, allThemes]);
 
     useEffect(() => {
         if (!scrollSyncEnabled) {
@@ -136,7 +141,7 @@ export default function App() {
         if (!previewRef.current) return;
         setIsCopying(true);
         try {
-            const finalHtmlForCopy = await makeWeChatCompatible(renderedHtml, activeTheme);
+            const finalHtmlForCopy = await makeWeChatCompatible(renderedHtml, activeTheme, allThemes);
 
             const blob = new Blob([finalHtmlForCopy], { type: 'text/html' });
             const textBlob = new Blob([previewRef.current.innerText], { type: 'text/plain' });
@@ -200,6 +205,13 @@ export default function App() {
         return 'md:grid-cols-[38.2fr_61.8fr]';
     };
 
+    const handleRemoveCustomTheme = (themeId: string) => {
+        removeTheme(themeId);
+        if (activeTheme === themeId) {
+            setActiveTheme(THEMES[0].id);
+        }
+    };
+
     return (
         <div className="flex flex-col h-screen overflow-hidden antialiased bg-[#fbfbfd] dark:bg-black transition-colors duration-300">
 
@@ -225,7 +237,14 @@ export default function App() {
 
             {/* 排版设置 & 工具栏 (桌面端) */}
             <div className={`glass-toolbar hidden md:grid grid-cols-1 ${gridLayoutClass()} px-0 z-[90] transition-all duration-500`}>
-                <ThemeSelector activeTheme={activeTheme} onThemeChange={setActiveTheme} />
+                <ThemeSelector
+                    activeTheme={activeTheme}
+                    onThemeChange={setActiveTheme}
+                    allThemes={allThemes}
+                    themeGroups={allThemeGroups}
+                    onAddTheme={addTheme}
+                    onRemoveTheme={handleRemoveCustomTheme}
+                />
                 <Toolbar
                     previewDevice={previewDevice}
                     onDeviceChange={setPreviewDevice}
@@ -242,7 +261,14 @@ export default function App() {
             {/* 移动端工具栏：分两行避免按钮被主题栏挤出可视区 */}
             <div className="md:hidden glass-toolbar z-[90]">
                 <div className="overflow-x-auto no-scrollbar border-b border-[#00000010] dark:border-[#ffffff10]">
-                    <ThemeSelector activeTheme={activeTheme} onThemeChange={setActiveTheme} />
+                    <ThemeSelector
+                        activeTheme={activeTheme}
+                        onThemeChange={setActiveTheme}
+                        allThemes={allThemes}
+                        themeGroups={allThemeGroups}
+                        onAddTheme={addTheme}
+                        onRemoveTheme={handleRemoveCustomTheme}
+                    />
                 </div>
                 <Toolbar
                     previewDevice={previewDevice}
